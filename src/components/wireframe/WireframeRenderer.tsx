@@ -360,11 +360,11 @@ const WireframeNode = ({ element }: { element: WireframeElement }) => {
       )
 
     case 'tabs':
-      const tabItems = element.items || ['Tab 1', 'Tab 2', 'Tab 3']
+      const tabItems = (element.items || ['Tab 1', 'Tab 2', 'Tab 3']) as Array<string | { label?: string }>
       return (
         <div className="mb-4">
           <div className="flex gap-1 border-b border-gray-200 mb-4">
-            {tabItems.map((tab: string | { label: string }, i: number) => (
+            {tabItems.map((tab, i: number) => (
               <button
                 key={i}
                 className={`px-4 py-2.5 text-sm font-medium transition-colors ${
@@ -373,7 +373,7 @@ const WireframeNode = ({ element }: { element: WireframeElement }) => {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {typeof tab === 'string' ? tab : tab.label}
+                {typeof tab === 'string' ? tab : (tab.label || `Tab ${i + 1}`)}
               </button>
             ))}
           </div>

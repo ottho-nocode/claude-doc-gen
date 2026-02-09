@@ -49,7 +49,7 @@ export default function ProjectDetailPage() {
       supabase.from('projects').select('*').eq('id', projectId).single(),
       supabase.from('transcriptions').select('*').eq('project_id', projectId).order('uploaded_at', { ascending: false }),
       supabase.from('documents').select('*').eq('project_id', projectId).order('generated_at', { ascending: false }),
-      supabase.from('wireframes').select('*').eq('project_id', projectId).single(),
+      supabase.from('wireframes').select('*').eq('project_id', projectId).maybeSingle(),
     ])
 
     if (projectRes.data) setProject(projectRes.data)

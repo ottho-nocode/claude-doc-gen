@@ -1,8 +1,7 @@
-import { PDFParse } from 'pdf-parse'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require('pdf-parse')
 
 export async function parsePdf(buffer: ArrayBuffer): Promise<string> {
-  const parser = new PDFParse({ data: new Uint8Array(buffer) })
-  const result = await parser.getText()
-  await parser.destroy()
+  const result = await pdfParse(Buffer.from(buffer))
   return result.text
 }

@@ -234,6 +234,7 @@ export default function ProjectDetailPage() {
       'text/plain': ['.txt'],
       'text/markdown': ['.md'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/pdf': ['.pdf'],
     },
     multiple: true,
   })

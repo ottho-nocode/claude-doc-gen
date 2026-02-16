@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { parseDocx } from '@/lib/parsers/docx'
+import { parsePdf } from '@/lib/parsers/pdf'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -37,6 +38,9 @@ export async function POST(request: NextRequest) {
     if (file.name.endsWith('.docx')) {
       const arrayBuffer = await file.arrayBuffer()
       content = await parseDocx(arrayBuffer)
+    } else if (file.name.endsWith('.pdf')) {
+      const arrayBuffer = await file.arrayBuffer()
+      content = await parsePdf(arrayBuffer)
     } else {
       content = await file.text()
     }

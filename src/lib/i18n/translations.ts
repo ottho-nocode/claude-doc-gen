@@ -109,6 +109,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     'docType.cahier_charges.desc': 'Specs techniques',
     'docType.screens_prompts': 'Prompts écrans',
     'docType.screens_prompts.desc': 'UI descriptions',
+    'docType.chiffrage': 'Chiffrage',
+    'docType.chiffrage.desc': 'Estimation coûts',
+    'project.tjmLabel': 'TJM (€/jour)',
 
     // Settings
     'settings.title': 'Paramètres',
@@ -276,6 +279,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     'docType.cahier_charges.desc': 'Technical specs',
     'docType.screens_prompts': 'Screen Prompts',
     'docType.screens_prompts.desc': 'UI descriptions',
+    'docType.chiffrage': 'Cost Estimate',
+    'docType.chiffrage.desc': 'Cost estimation',
+    'project.tjmLabel': 'Daily Rate (€/day)',
 
     // Settings
     'settings.title': 'Settings',
@@ -443,6 +449,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     'docType.cahier_charges.desc': 'Specs técnicas',
     'docType.screens_prompts': 'Prompts de pantalla',
     'docType.screens_prompts.desc': 'Descripciones UI',
+    'docType.chiffrage': 'Presupuesto',
+    'docType.chiffrage.desc': 'Estimación de costes',
+    'project.tjmLabel': 'Tarifa diaria (€/día)',
 
     // Settings
     'settings.title': 'Configuración',

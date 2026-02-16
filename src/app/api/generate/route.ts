@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { project_id, document_type } = body as { project_id: string; document_type: DocumentType }
+    const { project_id, document_type, tjm } = body as { project_id: string; document_type: DocumentType; tjm?: number }
 
     if (!project_id || !document_type) {
       return NextResponse.json({ error: 'project_id et document_type requis' }, { status: 400 })
@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
     const prompt = buildPrompt(
       document_type,
       project.name,
-      transcriptions.map((t) => t.content)
+      transcriptions.map((t) => t.content),
+      { tjm }
     )
 
     const content = await generateWithClaude(prompt)

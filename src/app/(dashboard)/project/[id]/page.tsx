@@ -6,7 +6,7 @@ import { WireframeRenderer, HtmlWireframeRenderer } from '@/components/wireframe
 import { formatDateTime, truncate } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n'
 import { DocumentType, DOCUMENT_TYPE_LABELS, GeneratedDocument, Project, Transcription, Wireframe, WireframeScreen } from '@/types'
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, Download, Eye, Layout, Loader2, Trash2, Upload, X, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, Download, Eye, FileSpreadsheet, Layout, Loader2, Trash2, Upload, X, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
@@ -26,6 +26,7 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
   const [generatingType, setGeneratingType] = useState<DocumentType | null>(null)
+  const [tjm, setTjm] = useState<number>(400)
   const [previewDoc, setPreviewDoc] = useState<GeneratedDocument | null>(null)
   const [wireframe, setWireframe] = useState<Wireframe | null>(null)
   const [isGeneratingWireframe, setIsGeneratingWireframe] = useState(false)
@@ -258,10 +259,14 @@ export default function ProjectDetailPage() {
     setGeneratingType(type)
 
     try {
+      const body: { project_id: string; document_type: DocumentType; tjm?: number } = { project_id: projectId, document_type: type }
+      if (type === 'chiffrage') {
+        body.tjm = tjm
+      }
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ project_id: projectId, document_type: type }),
+        body: JSON.stringify(body),
       })
 
       const data = await response.json()
@@ -282,22 +287,26 @@ export default function ProjectDetailPage() {
     setGeneratingType(null)
   }
 
-  const handleDownload = async (doc: GeneratedDocument, format: 'md' | 'docx') => {
+  const handleDownload = async (doc: GeneratedDocument, format: 'md' | 'docx' | 'xlsx') => {
     try {
-      const response = await fetch(`/api/export?id=${doc.id}&format=${format}`)
+      let url = `/api/export?id=${doc.id}&format=${format}`
+      if (format === 'xlsx') {
+        url += `&tjm=${tjm}`
+      }
+      const response = await fetch(url)
 
       if (!response.ok) {
         throw new Error(t('error.export'))
       }
 
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      const blobUrl = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
+      a.href = blobUrl
       a.download = `${DOCUMENT_TYPE_LABELS[doc.type].label}.${format}`
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(blobUrl)
       document.body.removeChild(a)
     } catch (error) {
       toast.error(t('error.export'))
@@ -439,7 +448,7 @@ export default function ProjectDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-2">
-                {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).map((type) => (
+                {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).filter(type => type !== 'chiffrage').map((type) => (
                   <Button
                     key={type}
                     variant="outline"
@@ -452,6 +461,32 @@ export default function ProjectDetailPage() {
                     <span className="truncate">{t(`docType.${type}`)}</span>
                   </Button>
                 ))}
+              </div>
+
+              {/* Chiffrage section with TJM input */}
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <label className="text-sm font-medium text-gray-700 whitespace-nowrap">{t('project.tjmLabel')}</label>
+                  <input
+                    type="number"
+                    min={100}
+                    max={2000}
+                    step={50}
+                    value={tjm}
+                    onChange={(e) => setTjm(Number(e.target.value) || 400)}
+                    className="w-24 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => handleGenerate('chiffrage')}
+                  disabled={generatingType !== null || transcriptions.length === 0}
+                  isLoading={generatingType === 'chiffrage'}
+                  className="justify-start gap-2 flex-1"
+                >
+                  <span>{DOCUMENT_TYPE_LABELS.chiffrage.icon}</span>
+                  <span className="truncate">{t('docType.chiffrage')}</span>
+                </Button>
               </div>
 
               {documents.length === 0 ? (
@@ -489,24 +524,38 @@ export default function ProjectDetailPage() {
                           <Eye className="w-4 h-4" />
                           {t('common.view')}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDownload(doc, 'md')}
-                          className="gap-1"
-                        >
-                          <Download className="w-4 h-4" />
-                          MD
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDownload(doc, 'docx')}
-                          className="gap-1"
-                        >
-                          <Download className="w-4 h-4" />
-                          DOCX
-                        </Button>
+                        {doc.type === 'chiffrage' ? (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDownload(doc, 'xlsx')}
+                            className="gap-1"
+                          >
+                            <FileSpreadsheet className="w-4 h-4" />
+                            XLSX
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDownload(doc, 'md')}
+                              className="gap-1"
+                            >
+                              <Download className="w-4 h-4" />
+                              MD
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDownload(doc, 'docx')}
+                              className="gap-1"
+                            >
+                              <Download className="w-4 h-4" />
+                              DOCX
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}

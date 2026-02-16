@@ -27,7 +27,7 @@ export interface Transcription {
   uploaded_at: string
 }
 
-export type DocumentType = 'user_stories' | 'user_flows' | 'cahier_charges' | 'screens_prompts'
+export type DocumentType = 'user_stories' | 'user_flows' | 'cahier_charges' | 'screens_prompts' | 'chiffrage'
 
 export interface GeneratedDocument {
   id: string
@@ -59,7 +59,8 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, { label: string; icon: s
   user_stories: { label: 'User Stories', icon: '📋', description: 'Stories agile' },
   user_flows: { label: 'User Flows', icon: '🔀', description: 'Diagrammes Mermaid' },
   cahier_charges: { label: 'Cahier des charges', icon: '📄', description: 'Specs techniques' },
-  screens_prompts: { label: 'Prompts écrans', icon: '🖥️', description: 'UI descriptions' }
+  screens_prompts: { label: 'Prompts écrans', icon: '🖥️', description: 'UI descriptions' },
+  chiffrage: { label: 'Chiffrage', icon: '💰', description: 'Estimation coûts' }
 }
 
 // Wireframe Types

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { markdownToDocx } from '@/lib/parsers/export-docx'
+import { chiffrageToXlsx } from '@/lib/parsers/export-xlsx'
 import { DOCUMENT_TYPE_LABELS, DocumentType } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -15,7 +16,8 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const documentId = searchParams.get('id')
-    const format = searchParams.get('format') as 'md' | 'docx'
+    const format = searchParams.get('format') as 'md' | 'docx' | 'xlsx'
+    const tjm = searchParams.get('tjm') ? Number(searchParams.get('tjm')) : 400
 
     if (!documentId || !format) {
       return NextResponse.json({ error: 'id et format requis' }, { status: 400 })
@@ -39,6 +41,16 @@ export async function GET(request: NextRequest) {
     }
 
     const filename = `${DOCUMENT_TYPE_LABELS[document.type as DocumentType].label}`
+
+    if (format === 'xlsx' && document.type === 'chiffrage') {
+      const buffer = await chiffrageToXlsx(document.content, tjm)
+      return new NextResponse(new Uint8Array(buffer), {
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="${filename}.xlsx"`,
+        },
+      })
+    }
 
     if (format === 'docx') {
       const buffer = await markdownToDocx(document.content, filename)

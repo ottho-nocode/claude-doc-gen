@@ -133,16 +133,61 @@ Pour chaque écran identifié, utilise le format suivant:
 
 ---
 
-Identifie tous les écrans mentionnés ou nécessaires d'après la transcription et génère une description complète pour chacun.`
+Identifie tous les écrans mentionnés ou nécessaires d'après la transcription et génère une description complète pour chacun.`,
+
+  chiffrage: `Tu es un expert en chiffrage de projets digitaux. À partir de la transcription de réunion client fournie, génère une estimation détaillée des coûts de développement au format JSON structuré.
+
+RÈGLES STRICTES:
+1. Identifie toutes les fonctionnalités mentionnées et regroupe-les en sections logiques
+2. Pour chaque fonctionnalité, estime le nombre de jours de développement et un coefficient de complexité (1 = simple, 1.5 = moyen, 2 = complexe, 3 = très complexe)
+3. Identifie les rôles utilisateurs mentionnés dans le projet
+4. Sois réaliste dans tes estimations — ne sous-estime pas
+5. Inclue les phases classiques : Design, Développement Front, Développement Back, Tests, Intégration, Déploiement
+
+FORMAT DE SORTIE (JSON STRICT — pas de texte avant/après, pas de blocs markdown):
+{
+  "sections": [
+    {
+      "name": "Nom de la section",
+      "features": [
+        {
+          "name": "Nom de la fonctionnalité",
+          "role": "Rôle concerné ou Tous",
+          "days": 1.5,
+          "complexity": 1,
+          "comment": "Détail optionnel"
+        }
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "name": "Nom du rôle",
+      "description": "Description courte du rôle"
+    }
+  ]
+}
+
+IMPORTANT:
+- Réponds UNIQUEMENT avec le JSON, sans aucun texte explicatif avant ou après, sans backticks markdown.
+- "days" est le nombre de jours-homme estimé (peut être décimal : 0.5, 1, 1.5, 2, etc.)
+- "complexity" est un multiplicateur : 1, 1.5, 2 ou 3
+- Le total de jours réels par feature = days × complexity (le calcul sera fait côté code)
+- Génère des estimations RÉALISTES et COMPLÈTES basées sur la transcription.`
 }
 
 export function buildPrompt(
   type: DocumentType,
   projectName: string,
-  transcriptions: string[]
+  transcriptions: string[],
+  options?: { tjm?: number }
 ): string {
   const systemPrompt = PROMPTS[type]
   const transcriptionsText = transcriptions.join('\n\n---\n\n')
+
+  const tjmContext = type === 'chiffrage' && options?.tjm
+    ? `\n\nNote: Le TJM (Taux Journalier Moyen) est de ${options.tjm}€/jour. Les calculs de prix seront faits côté code, tu dois uniquement estimer les jours et la complexité.`
+    : ''
 
   return `${systemPrompt}
 
@@ -155,7 +200,7 @@ export function buildPrompt(
 ${transcriptionsText}
 
 ---
-
+${tjmContext}
 Génère maintenant la documentation demandée en français, de manière complète et professionnelle.`
 }
 
